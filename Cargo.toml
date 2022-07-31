@@ -1,0 +1,11 @@
+[package]
+description = "Provides agnostic text editing state management."
+authors = ["Daniel Way <contact@danieldway.com>"]
+name = "tty-text"
+version = "1.0.0"
+license = "MIT"
+edition = "2021"
+repository = "https://github.com/danielway/tty-text"
+
+[dependencies]
+unicode-segmentation = "1.9.0"
