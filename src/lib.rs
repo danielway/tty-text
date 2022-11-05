@@ -81,6 +81,9 @@ pub struct Text {
 
     /// Whether this editor is configured for multi-line value editing.
     multi_line: bool,
+
+    /// The preferred position to use when restoring across vertical movements.
+    preferred_column: usize,
 }
 
 impl Text {
@@ -106,6 +109,7 @@ impl Text {
             lines: vec![String::new()],
             cursor: (0, 0),
             multi_line,
+            preferred_column: 0,
         }
     }
 
@@ -152,6 +156,7 @@ impl Text {
             lines,
             cursor: (0, 0),
             multi_line,
+            preferred_column: 0,
         };
 
         text.set_cursor(cursor);
@@ -189,6 +194,8 @@ impl Text {
         if self.cursor.0 > line_length {
             self.cursor.0 = line_length;
         }
+
+        self.preferred_column = self.cursor.0;
     }
 
     /// Update this editor's state from the specified input.
@@ -208,6 +215,8 @@ impl Text {
     fn insert_character(&mut self, ch: char) {
         self.lines[self.cursor.1].insert(self.cursor.0, ch);
         self.cursor.0 += 1;
+
+        self.preferred_column = self.cursor.0;
     }
 
     /// Backspace the character preceding the editor's current cursor position.
@@ -230,6 +239,8 @@ impl Text {
             self.cursor.0 -= 1;
             self.lines[self.cursor.1].remove(self.cursor.0);
         }
+
+        self.preferred_column = self.cursor.0;
     }
 
     /// Insert a newline at the editor's current cursor position.
@@ -251,6 +262,8 @@ impl Text {
 
         // Move the cursor to the start of the next line
         self.cursor = (0, new_line_index);
+
+        self.preferred_column = self.cursor.0;
     }
 
     /// Attempt to move the editor's cursor up one line.
@@ -262,7 +275,9 @@ impl Text {
         let on_first_line = self.cursor.1 == 0;
         if !on_first_line {
             let previous_line = self.cursor.1 - 1;
-            let new_column = std::cmp::min(self.cursor.0, self.get_line_length(previous_line));
+            let desired_column = std::cmp::max(self.cursor.0, self.preferred_column);
+            let new_column = std::cmp::min(desired_column, self.get_line_length(previous_line));
+
             self.cursor = (new_column, previous_line);
         }
     }
@@ -277,7 +292,8 @@ impl Text {
 
         let is_last_line = next_line == self.lines.len();
         if !is_last_line {
-            let new_column = std::cmp::min(self.cursor.0, self.get_line_length(next_line));
+            let desired_column = std::cmp::max(self.cursor.0, self.preferred_column);
+            let new_column = std::cmp::min(desired_column, self.get_line_length(next_line));
             self.cursor = (new_column, self.cursor.1 + 1);
         }
     }
@@ -293,6 +309,8 @@ impl Text {
             let previous_line = self.cursor.1 - 1;
             self.cursor = (self.get_line_length(previous_line), previous_line);
         }
+
+        self.preferred_column = self.cursor.0;
     }
 
     /// Attempt to move the editor's cursor right one character.
@@ -305,6 +323,8 @@ impl Text {
         } else if !on_last_line {
             self.cursor = (0, self.cursor.1 + 1);
         }
+
+        self.preferred_column = self.cursor.0;
     }
 
     /// Get the specified line's length.
