@@ -2,7 +2,7 @@
 description = "Provides agnostic text editing state management."
 authors = ["Daniel Way <contact@danieldway.com>"]
 name = "tty-text"
-version = "2.0.0-beta.2"
+version = "2.0.0"
 license = "MIT"
 edition = "2021"
 repository = "https://github.com/danielway/tty-text"
