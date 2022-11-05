@@ -263,6 +263,12 @@ impl Text {
         // Move the cursor to the start of the next line
         self.cursor = (0, new_line_index);
 
+        // If the previous line started with a bullet, continue it
+        if self.lines[self.cursor.1 - 1].starts_with(" - ") {
+            self.lines[new_line_index].insert_str(0, " - ");
+            self.cursor.0 += 3;
+        }
+
         self.preferred_column = self.cursor.0;
     }
 
